@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catálogo de Músicas</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="./images/favicon.png"> <!-- Change the path to your favicon -->
+
+  <!-- Bootstrap CSS -->
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- DataTables CSS -->
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css">
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" type="text/css" href="./css/main.css">
+
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <!-- Bootstrap JS -->
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+
+  <!-- DataTables JS -->
+  <script type="text/javascript" charset="utf8"
+    src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+
+  <style>
+    #songsTable_filter label {
+      color: white;
+    }
+
+    /* Custom DataTable styling for better responsiveness */
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+      padding: 0.5rem;
+      margin: 0.1rem;
+      border-radius: 0.25rem;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+      background-color: #007bff;
+      color: white;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+      background-color: #e9ecef;
+    }
+
+    .dataTables_wrapper .dataTables_info {
+      margin-top: 0.5rem;
+    }
+
+    /* Hide specific links */
+    a[title='Compartilhar no WhatsApp'] {
+      display: none;
+    }
+
+    img[src="images/logo.png"],
+    #songsTable_length,
+    #songsTable_filter,
+    .LinkComprar {
+      display: none;
+    }
+
+
+    #songsTable {
+      padding: 0;
+      margin-right: 10;
+    }
+
+    /* Image animation */
+    .image-slide {
+      position: fixed;
+      width: 100px;
+      height: 100px;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(100%);
+      /* Start off-screen (below) */
+      transition: transform 1.5s ease-in-out, opacity 1.5s ease-in-out, visibility 0s 1.5s;
+    }
+
+    table {
+      border: 1px solid #6b788b !important;
+    }
+
+    .image-slide.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+      /* Slide to its normal position */
+      transition: transform 1.5s ease-in-out, opacity 1.5s ease-in-out, visibility 0s;
+    }
+
+    /* Corners */
+    .top-left {
+      top: 0;
+      left: 0;
+    }
+
+    .top-right {
+      top: 0;
+      right: 0;
+    }
+
+    .bottom-left {
+      bottom: 0;
+      left: 0;
+    }
+
+    .bottom-right {
+      bottom: 0;
+      right: 0;
+    }
+
+    /* Rotation without transition */
+    .rotate-90 {
+      rotate: 90deg;
+    }
+
+    .rotate-270 {
+      rotate: 270deg;
+    }
+
+    .rotate-0 {
+      rotate: 0deg;
+    }
+
+    /* Dark background */
+    body {
+      background-color: #0b1320;
+      color: #ffffff;
+    }
+
+    /* Estilo para a tabela */
+    .table {
+      background-color: #1c2a39;
+      color: #ffffff;
+    }
+
+    /* Alternar entre linhas escuras e claras */
+    .table-striped tbody tr:nth-of-type(odd) {
+      background-color: #1c2a39;
+    }
+
+    .table-striped tbody tr:nth-of-type(even) {
+      background-color: #243447;
+    }
+
+    /* Cores dos títulos e textos */
+    h1,
+    h3 {
+      color: #ffffff;
+    }
+
+    /* Botões customizados */
+    .btn-primary {
+      background-color: #ffffff;
+      color: #6f42c1;
+      border: 2px solid #6f42c1;
+    }
+
+    .btn-primary:hover {
+      background-color: #6f42c1;
+      color: #ffffff;
+    }
+
+    /* Estilos para os ícones das opções */
+    .table .options-icon {
+      color: #ffffff;
+    }
+
+    /* Paginação com cores personalizadas */
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+      background-color: #6f42c1;
+      color: white;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+      color: #ffffff;
+      border: none;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+      background-color: #ffffff;
+      color: #6f42c1;
+      border-radius: 50%;
+    }
+
+    /* Estilos para o input de pesquisa */
+    .dataTables_filter input {
+      background-color: #ffffff;
+      border: 1px solid #6f42c1;
+      color: #0b1320;
+    }
+
+    /* Modal customizado */
+    .modal-content {
+      background-color: #243447;
+      color: #ffffff;
+    }
+
+    .modal-header,
+    .modal-footer {
+      border-color: #6f42c1;
+    }
+
+    .modal-header .close {
+      color: #ffffff;
+    }
+
+    /* Bordas arredondadas na tabela */
+    .table {
+      border-radius: 0.75rem;
+      overflow: hidden;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+
+    /* Remover linhas de colunas (borda das células) */
+    .table-bordered th,
+    .table-bordered td {
+      border: none;
+    }
+
+    /* Ajustar as bordas ao redor da tabela */
+    .table-bordered {
+      border: none;
+    }
+
+    /* Contador de resultados e itens de paginação em branco */
+    .dataTables_wrapper .dataTables_info,
+    .dataTables_wrapper .dataTables_paginate {
+      color: #ffffff;
+    }
+
+    .dataTables_wrapper .dataTables_length label {
+      color: #ffffff;
+    }
+
+    /* Paginação customizada */
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+      color: #ffffff;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+      background-color: #6f42c1;
+      color: #ffffff;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+      background-color: #ffffff;
+      color: #6f42c1;
+    }
+
+    .custom-search {
+      display: flex;
+      justify-content: flex-start;
+      margin-bottom: 1rem;
+    }
+
+    .custom-search input {
+      background-color: #ffffff;
+      border: 1px solid #6f42c1;
+      color: #0b1320;
+      padding: 0.375rem 0.75rem;
+      border-radius: 0.25rem;
+    }
+
+    /* Custom DataTable pagination styling */
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+      color: #ffffff;
+      background-color: transparent;
+      border: none;
+      font-size: 1.5rem;
+      padding: 5px 10px;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+      background-color: #6f42c1 !important;
+      /* Purple background for the current page */
+      border-radius: 20%;
+      width: 45px;
+      height: 45px;
+      color: #ffffff;
+      font-weight: bold;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      /* Lighter hover effect */
+      border-radius: 50%;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+      color: rgba(255, 255, 255, 0.5);
+      /* Disabled buttons are greyed out */
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button:focus {
+      outline: none;
+    }
+
+    /* Target the specific image by its title attribute */
+    img[title="Mostrar Letra da Música"] {
+      cursor: pointer;
+      /* Change cursor to pointer to indicate clickability */
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    /* Hover effect */
+    img[title="Mostrar Letra da Música"]:hover {
+      transform: scale(1.1);
+      /* Slightly enlarge the image */
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+      /* Add shadow on hover */
+
+    }
+
+    /* Active (click) effect */
+    img[title="Mostrar Letra da Música"]:active {
+      transform: scale(0.95);
+      /* Shrink the image slightly when clicked */
+      box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.3);
+      /* Modify shadow on click */
+    }
+
+    .btn-ana {
+      border-radius: 10px;
+      padding: 4px;
+      padding-right: 10px;
+    }
+
+    a[title="Compartilhar no Whatsapp"] img {
+      width: 24px;
+      /* Set the icon width to 24px */
+    }
+
+    /* Target the WhatsApp icon by its title attribute */
+    a[title="Compartilhar no Whatsapp"] img {
+      width: 24px;
+      /* Set the icon width to 24px */
+      cursor: pointer;
+      /* Change cursor to pointer to indicate clickability */
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    /* Hover effect for the WhatsApp icon */
+    a[title="Compartilhar no Whatsapp"] img:hover {
+      transform: scale(1.1);
+      /* Slightly enlarge the image */
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+      /* Add shadow on hover */
+    }
+
+    /* Active (click) effect for the WhatsApp icon */
+    a[title="Compartilhar no Whatsapp"] img:active {
+      transform: scale(0.95);
+      /* Shrink the image slightly when clicked */
+      box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.3);
+      /* Modify shadow on click */
+    }
+
+    /* Ensure the button text uses the custom color */
+.collapsible-btn.btn-ana {
+  color: #4D0670 !important; /* Apply custom text color */
+  display: flex; /* Use flexbox to align image and text */
+  align-items: center; /* Vertically align image and text in the middle */
+  justify-content: flex-start; /* Keep the image and text left-aligned */
+  padding: 10px; /* Optional: Add some padding for better appearance */
+  margin-left: 10px;
+  margin-bottom: 20px;
+}
+
+.collapsible-btn.btn-ana img {
+  margin-right: 10px; /* Add some space between the image and the text */
+  height: 24px; /* Optional: Set image height if needed to ensure consistency */
+}
+
+  </style>
+</head>
+
+<body>
+  <div class="container mt-5">
+
+    <div class="text-center" style="">
+      <img src="./images/logao.png" class="img-fluid d-block " alt="Llama" width="500px">
+    </div>
+
+
+    <h1 class="text-left mb-4" style="margin-left: 10px;">Catálogo de Músicas</h1>
+
+    <!-- Collapsible button -->
+    <button class="collapsible-btn btn-ana" data-toggle="collapse" data-target="#musicTable" aria-expanded="false"
+      aria-controls="musicTable" >
+      <img src="./images/grade.png" />
+      Especiais
+    </button>
+
+    <!-- Collapsible content -->
+    <div id="musicTable" class="collapse table-collapse"  style="padding-right: 6px ; padding-left: 10px;">
+      <table class="table table-striped table-bordered">
+        <thead>
+          <tr>
+            <th>Música</th>
+            <th>Código</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Você quer mesmo escolher essa música?</td>
+            <td>40000</td>
+          </tr>
+          <tr>
+            <td>Um convite, um vídeo, uma obra de arte</td>
+            <td>40001</td>
+          </tr>
+          <tr>
+            <td>Favorita da Joice</td>
+            <td>40002</td>
+          </tr>
+          <tr>
+            <td>Viva la Pinata</td>
+            <td>40003</td>
+          </tr>
+          <tr>
+            <td>Foi um erro colocar esse audio a cada 5 segundos</td>
+            <td>40004</td>
+          </tr>
+          <tr>
+            <td>E se eu fosse naquele var ver o app de Karaoke</td>
+            <td>40005</td>
+          </tr>
+          <tr>
+            <td>PQP ANA FLAVIA</td>
+            <td>40006</td>
+          </tr>
+          <tr>
+            <td>Você pagaria por um DLC ?</td>
+            <td>40007</td>
+          </tr>
+          <tr>
+            <td>Foda-se</td>
+            <td>66666</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+
+  <!-- Table for DataTable -->
+  <div class="table-responsive" style="padding: 24px;">
+    <div class="custom-search">
+      <input type="text" id="customSearch" placeholder="Fazer busquinha...">
+    </div>
+    <table id="songsTable" class="table table-striped table-bordered">
+      <thead>
+        <tr>
+          <th>Música</th>
+          <th>Código</th>
+          <th>Opções</th>
+        </tr>
+      </thead>
+    </table>
+  </div>
+
+  <!-- Lyrics Modal -->
+  <div id="AlertBg" class="modal fade" tabindex="-1" role="dialog">
+
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Letra da Música</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div id="AlertMsg" class="modal-body">
+          <h3></h3>
+          <p></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-dismiss="modal">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- Sliding Image -->
+  <img id="slidingImage" src="./images/ana.webp" alt="Example" class="image-slide">
+
+  <!-- Audio for the sound effect -->
+  <audio id="appearSound">
+    <source src="./sounds/aha.mp3" type="audio/mpeg">
+  </audio>
+
+  </div>
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      // Initialize DataTable
+      var table = $('#songsTable').DataTable({
+        ajax: './json/songs.json', // Load from the local JSON file
+        columns: [
+          {
+            data: null,
+            render: function (data, type, row) {
+              return `<div>${data[0]}</div>`;  // Combine Music Name and Code
+            }
+          },
+          { data: null, render: function (data) { return `<div> ${data[1]}</div>`; } },   // Options
+          { data: 2, render: function (data) { return data; } }   // Options
+        ],
+        language: {
+          url: 'https://cdn.datatables.net/plug-ins/1.10.25/i18n/Portuguese-Brasil.json', // Portuguese translation
+          paginate: {
+            previous: '&lt;', // Replace "Anterior" with "<"
+            next: '&gt;'      // Replace "Próximo" with ">"
+          }
+        },
+        paging: true,
+        searching: true,
+        responsive: true,
+        pageLength: 15,  // Adjust number of rows displayed per page
+        lengthChange: false,  // Disable changing number of rows displayed
+        pagingType: "simple_numbers", // Keep numbers with the previous/next buttons
+      });
+
+
+      // Função de pesquisa global no campo de pesquisa
+
+      $('#customSearch').on('keyup', function () {
+        table.search(this.value).draw();
+      });
+
+      // Function to slide image from random corner with proper rotation and play sound
+      function slideImage() {
+        const corners = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
+        const randomCorner = corners[Math.floor(Math.random() * corners.length)];
+        const img = $('#slidingImage');
+        const sound = $('#appearSound')[0]; // Select the audio element
+
+        // Remove existing classes
+        img.removeClass('top-left top-right bottom-left bottom-right show rotate-90 rotate-270 rotate-0');
+
+        // Set new random corner and appropriate rotation
+        img.addClass(randomCorner);
+
+        // Apply rotation based on the corner
+        if (randomCorner === 'top-left') {
+          img.addClass('rotate-90');
+        } else if (randomCorner === 'top-right') {
+          img.addClass('rotate-270');
+        } else if (randomCorner === 'bottom-left' || randomCorner === 'bottom-right') {
+          img.addClass('rotate-0');
+        }
+
+        // Add show class after a short delay
+        setTimeout(function () {
+          img.addClass('show');
+          sound.play(); // Play sound when image appears
+        }, 10);
+
+        // Hide image after animation
+        setTimeout(function () {
+          img.removeClass('show');
+        }, 3000);  // Hide after 3 seconds
+      }
+
+      // Trigger image slide every 5 seconds
+      setInterval(slideImage, 5000);
+    });
+
+    $("html").on("click", ".lyricMusic", function () {
+      var NomeArtista = $(this).attr("data-art").split(" - ");
+      var NomeMsc = $(this).attr("data-msc");
+
+      // Make AJAX request to the Vagalume API
+      $.ajax({
+        type: 'POST',
+        url: 'https://api.vagalume.com.br/search.php',
+        dataType: 'json',
+        data: {
+          'art': NomeArtista[0],  // Artist name
+          'mus': NomeMsc,  // Song name
+          'apikey': 'bc024e3c980754c91a104f47ed61bbc5'  // API key (replace with your key if needed)
+        },
+        success: function (data) {
+          if (data.type == "exact" || data.type == "aprox") {
+            var LetradaMusica = data.mus[0].text.replace(/\n/g, "<br />");  // Format newlines for HTML
+            $("#AlertMsg p").html(LetradaMusica);
+            $("#AlertMsg h3").html(data.mus[0].name + " - " + data.art.name);
+            $("#AlertBg").modal('show');
+          } else {
+            $("#AlertMsg p").html("Não foi possível mostrar a letra dessa música no momento.");
+            $("#AlertMsg h3").html("");
+            $("#AlertBg").modal('show');
+          }
+        },
+        error: function () {
+          $("#AlertMsg p").html("Erro ao buscar a letra da música.");
+          $("#AlertMsg h3").html("");
+          $("#AlertBg").modal('show');
+        }
+      });
+    });
+  </script>
+</body>
+
+</html>
